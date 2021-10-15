@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -11,10 +13,14 @@ public class GameController : MonoBehaviour
 
     public BoxCollider2D TapCollider;
 
-    private bool _isGameEnded = false;
-    private Bird _shotBird;
+    public GameObject GameOver;
+    public Text conditionText;
+
+    public bool _isGameEnded = false;
+    [SerializeField] private Bird _shotBird;
     void Start()
     {
+
         for (int i = 0; i < Birds.Count; i++)
         {
             Birds[i].OnBirdDestroyed += ChangeBird;
@@ -24,8 +30,11 @@ public class GameController : MonoBehaviour
         {
             Enemies[i].OnEnemyDestroyed += CheckGameEnd;
         }
+
+        GameOver.SetActive(false);
         TapCollider.enabled = false;
         SlingShooter.InitiateBird(Birds[0]);
+        _shotBird = Birds[0];
     }
     public void ChangeBird()
     {
@@ -35,10 +44,22 @@ public class GameController : MonoBehaviour
             return;
         }
         Birds.RemoveAt(0);
-
         if (Birds.Count > 0)
         {
+            _shotBird = Birds[0];
             SlingShooter.InitiateBird(Birds[0]);
+        }
+
+        //Game over kondisi
+        if (Enemies.Count == 0)
+        {
+            conditionText.text = "You Win !!!";
+            GameOver.SetActive(true);
+        }
+        else if (Birds.Count == 0 && Enemies.Count > 0)
+        {
+            conditionText.text = "You Lose !!!";
+            GameOver.SetActive(true);
         }
     }
     public void CheckGameEnd(GameObject destroyedEnemy)
@@ -50,11 +71,6 @@ public class GameController : MonoBehaviour
                 Enemies.RemoveAt(i);
                 break;
             }
-        }
-
-        if (Enemies.Count == 0)
-        {
-            _isGameEnded = true;
         }
     }
     public void AssignTrail(Bird bird)
@@ -69,5 +85,14 @@ public class GameController : MonoBehaviour
         {
             _shotBird.OnTap();
         }
+    }
+    public void RestartButton()
+    {
+        SceneManager.LoadScene("Main");
+        TapCollider.enabled = true;
+    }
+    public void ExitButton()
+    {
+        Application.Quit();
     }
 }
